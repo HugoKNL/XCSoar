@@ -57,27 +57,26 @@ jobs:
         run: |
           TAG=$(echo "${{ github.ref }}" | cut -f3 -d '/')
           echo "TAG=$TAG" >> $GITHUB_ENV
-          echo "::set-output name=TAG::$TAG"
-          echo 'CHANGELOGENTRY<<EOF' >> $GITHUB_ENV
-          ./tools/changelog.sh "$TAG" >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
-          case "$TAG" in
-            *-rc*)
-              echo "PRERELEASE=true" >> $GITHUB_ENV
-              ;;
-            *)
-              echo "PRERELEASE=false" >> $GITHUB_ENV
-              ;;
-          esac
+      
+          {
+            echo "CHANGELOGENTRY<<EOF"
+            ./tools/changelog.sh "$TAG"
+            echo "EOF"
+          } >> $GITHUB_ENV
+      
+          if [[ "$TAG" == *-rc* ]]; then
+            echo "PRERELEASE=true" >> $GITHUB_ENV
+          else
+            echo "PRERELEASE=false" >> $GITHUB_ENV
+          fi
         id: changelogentry
 
-      - name: get XCSoar Version
+      - name: Get XCSoar Version
         id: get_version
         run: |
           VERSION=$(cat VERSION.txt)
           echo "$VERSION"
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${VERSION}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create release
         id: create_release
